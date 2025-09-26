@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payments Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>График платежей</h2>
+    <button onclick="toggleChart()">Переключить график</button>
+    <canvas id="chart"></canvas>
+
+    <script>
+        const rawData = {{ data|safe }};
+        let currentType = 'line';
+
+        function renderChart(type) {
+            const ctx = document.getElementById('chart').getContext('2d');
+            if (window.chartInstance) window.chartInstance.destroy();
+
+            let labels, values;
+
+            if (type === 'line') {
+                labels = rawData.map(p => p.date);
+                values = rawData.map(p => p.amount);
+            } else {
+                labels = rawData.map(p => p.payer);
+                values = rawData.map(p => p.amount);
+            }
+
+            window.chartInstance = new Chart(ctx, {
+                type: type === 'line' ? 'line' : 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: type === 'line' ? 'Платежи по датам' : 'Платежи по клиентам',
+                        data: values,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function toggleChart() {
+            currentType = currentType === 'line' ? 'bar' : 'line';
+            renderChart(currentType);
+        }
+
+        renderChart(currentType);
+    </script>
+</body>
+</html>
